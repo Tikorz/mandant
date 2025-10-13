@@ -44,7 +44,12 @@ export default function MandantPage() {
     }
 
     try {
-      const directoryHandle = await (window as any).showDirectoryPicker({
+      const directoryHandle = await (window as typeof window & {
+        showDirectoryPicker: (options?: {
+          mode?: 'read' | 'readwrite';
+          startIn?: 'desktop' | 'documents' | 'downloads' | 'music' | 'pictures' | 'videos';
+        }) => Promise<FileSystemDirectoryHandle>;
+      }).showDirectoryPicker({
         mode: 'readwrite',
         startIn: 'documents'
       });
@@ -68,10 +73,11 @@ export default function MandantPage() {
       const msg = `✅ Ordnerstruktur für Mandant ${mandant.mandantenNummer} erstellt!\n\nDauerakte:\n• Allgemeiner Schriftverkehr\n• Verträge Unterlagen\n• Auftragswesen\n\nJahresakte:\n• Finanzbuchhaltung\n• Anlagenbuchhaltung\n• Jahresabschluss\n• FIBU\n\n⚠️ Klicken Sie auf "Schreibschutz aktivieren" um die Ordner zu schützen!`;
       alert(msg);
 
-    } catch (error: any) {
-      if (error.name === 'AbortError') {
+    } catch (error: unknown) {
+      const err = error as Error & { name: string };
+      if (err.name === 'AbortError') {
         console.log('Ordnerauswahl abgebrochen');
-      } else if (error.name === 'NoModificationAllowedError') {
+      } else if (err.name === 'NoModificationAllowedError') {
         alert('❌ FEHLER: Keine Schreibrechte!\n\n' +
               'Mögliche Ursachen:\n' +
               '• Netzlaufwerk M:\\ hat Einschränkungen\n' +
@@ -82,10 +88,10 @@ export default function MandantPage() {
               '2. ODER verwenden Sie den orangen Button "Schreibschutz aktivieren"\n' +
               '   (lädt PowerShell-Skript herunter - funktioniert immer!)');
       } else {
-        console.error('Fehler:', error);
+        console.error('Fehler:', err);
         alert('❌ Fehler beim Erstellen der Ordnerstruktur.\n\n' +
-              'Fehlertyp: ' + error.name + '\n' +
-              'Meldung: ' + error.message + '\n\n' +
+              'Fehlertyp: ' + err.name + '\n' +
+              'Meldung: ' + err.message + '\n\n' +
               '💡 Tipp: Verwenden Sie den orangen Button "Schreibschutz aktivieren"');
       }
     }
