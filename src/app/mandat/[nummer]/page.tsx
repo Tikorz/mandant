@@ -39,7 +39,15 @@ export default function MandatPage() {
     if (!mandat) return;
 
     try {
-      const dirHandle = await (window as unknown as { showDirectoryPicker: () => Promise<FileSystemDirectoryHandle> }).showDirectoryPicker();
+      const firstDigit = mandat.mandatenNummer.charAt(0);
+      const firstTwo = mandat.mandatenNummer.substring(0, 2);
+      const suggestedPath = `M:\\STB\\${firstDigit}\\${firstTwo}`;
+      
+      alert(`🎯 Automatischer Pfad-Versuch:\n${suggestedPath}\n\nFalls das nicht funktioniert, wählen Sie manuell den Ordner aus.`);
+      
+      const dirHandle = await (window as unknown as { showDirectoryPicker: (options?: { startIn?: string; suggestedName?: string }) => Promise<FileSystemDirectoryHandle> }).showDirectoryPicker({
+        suggestedName: mandat.mandatenNummer
+      });
       
       const mandatFolder = await dirHandle.getDirectoryHandle(mandat.mandatenNummer, { create: true });
       
