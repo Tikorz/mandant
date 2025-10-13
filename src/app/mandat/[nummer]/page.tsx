@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { getmandatByNummer, savemandat } from '@/lib/storage';
 import type { mandat } from '@/types/mandat';
-import { ArrowLeft, X, HardDrive, Shield } from 'lucide-react';
+import { ArrowLeft, X, HardDrive } from 'lucide-react';
 
 export default function MandatPage() {
   const router = useRouter();
@@ -38,168 +38,34 @@ export default function MandatPage() {
   const handleCreateFolders = async () => {
     if (!mandat) return;
 
-    alert('⚠️ Browser-Ordnererstellung nicht für M:\\STB geeignet!\n\n' +
-          '🔧 Verwenden Sie stattdessen den orangen Button:\n' +
-          '"Ordner + Schutz (PowerShell)"\n\n' +
-          '✅ Das PowerShell-Skript:\n' +
-          '• Findet automatisch den richtigen Pfad\n' +
-          '• Erstellt alle Ordner\n' +
-          '• Aktiviert Schreibschutz\n' +
-          '• Funktioniert mit Netzlaufwerken');
-  };
-
-  const handleActivateProtection = () => {
-    if (!mandat) return;
-
-    const firstDigit = mandat.mandatenNummer.charAt(0);
-    const num = mandat.mandatenNummer;
-
-    const script = `# PowerShell-Skript für mandaten-Ordnerstruktur
-# mandatennummer: ${num}
-# Erstellt Ordner UND aktiviert Schreibschutz
-# WICHTIG: Mit Administrator-Rechten ausführen!
-
-# Automatische Pfad-Erkennung basierend auf Mandatennummer
-$mandatNummer = "${num}"
-$firstDigit = $mandatNummer.Substring(0,1)
-$firstTwoDigits = $mandatNummer.Substring(0,2)
-$basePath = "M:\\\\STB\\\\$firstDigit\\\\$firstTwoDigits\\\\$mandatNummer"
-
-Write-Host "=====================================" -ForegroundColor Cyan
-Write-Host "mandaten-Ordnerstruktur erstellen" -ForegroundColor Cyan
-Write-Host "mandat: $mandatNummer" -ForegroundColor Cyan
-Write-Host "Pfad: $basePath" -ForegroundColor Cyan
-Write-Host "=====================================" -ForegroundColor Cyan
-Write-Host ""
-
-# Schritt 1: Ordner erstellen (falls nicht vorhanden)
-if (-not (Test-Path $basePath)) {
-    Write-Host "[1/2] Erstelle Ordnerstruktur..." -ForegroundColor Green
-
-    # Erstelle Pfad-Hierarchie: M:\\STB\\4\\41\\41320
-    $stbPath = "M:\\\\STB"
-    $firstDigitPath = "$stbPath\\\\$firstDigit"
-    $twoDigitPath = "$firstDigitPath\\\\$firstTwoDigits"
-    
-    New-Item -ItemType Directory -Path $stbPath -Force | Out-Null
-    New-Item -ItemType Directory -Path $firstDigitPath -Force | Out-Null
-    New-Item -ItemType Directory -Path $twoDigitPath -Force | Out-Null
-    New-Item -ItemType Directory -Path $basePath -Force | Out-Null
-
-    # Dauerakte
-    $daueraktePath = "$basePath\\\\Dauerakte"
-    New-Item -ItemType Directory -Path $daueraktePath -Force | Out-Null
-    New-Item -ItemType Directory -Path "$daueraktePath\\\\Allgemeiner Schriftverkehr" -Force | Out-Null
-    New-Item -ItemType Directory -Path "$daueraktePath\\\\Verträge Unterlagen" -Force | Out-Null
-    New-Item -ItemType Directory -Path "$daueraktePath\\\\Auftragswesen" -Force | Out-Null
-
-    # Jahresakte
-    $jahresaktePath = "$basePath\\\\Jahresakte"
-    New-Item -ItemType Directory -Path $jahresaktePath -Force | Out-Null
-    New-Item -ItemType Directory -Path "$jahresaktePath\\\\Finanzbuchhaltung" -Force | Out-Null
-    New-Item -ItemType Directory -Path "$jahresaktePath\\\\Anlagenbuchhaltung" -Force | Out-Null
-    New-Item -ItemType Directory -Path "$jahresaktePath\\\\Jahresabschluss" -Force | Out-Null
-    New-Item -ItemType Directory -Path "$jahresaktePath\\\\FIBU" -Force | Out-Null
-
-    Write-Host "      ✓ Ordner erfolgreich erstellt!" -ForegroundColor Green
-    Write-Host ""
-} else {
-    Write-Host "[1/2] Ordner existieren bereits - überspringe Erstellung" -ForegroundColor Yellow
-    Write-Host ""
-}
-
-Write-Host "[2/2] Aktiviere Schreibschutz..." -ForegroundColor Green
-Write-Host ""
-
-function Set-FolderProtection {
-    param([string]$path)
-
     try {
-        $item = Get-Item $path
-        $item.Attributes = $item.Attributes -bor [System.IO.FileAttributes]::ReadOnly
-
-        $acl = Get-Acl $path
-
-        $acl.Access | Where-Object {
-            $_.IdentityReference -notlike "*Administrators*" -and
-            $_.IdentityReference -notlike "*SYSTEM*"
-        } | ForEach-Object {
-            $acl.RemoveAccessRule($_) | Out-Null
-        }
-
-        $readRule = New-Object System.Security.AccessControl.FileSystemAccessRule(
-            "BUILTIN\\Users",
-            "ReadAndExecute",
-            "ContainerInherit, ObjectInherit",
-            "None",
-            "Allow"
-        )
-        $acl.AddAccessRule($readRule)
-
-        $adminRule = New-Object System.Security.AccessControl.FileSystemAccessRule(
-            "BUILTIN\\Administrators",
-            "FullControl",
-            "ContainerInherit, ObjectInherit",
-            "None",
-            "Allow"
-        )
-        $acl.AddAccessRule($adminRule)
-
-        $systemRule = New-Object System.Security.AccessControl.FileSystemAccessRule(
-            "NT AUTHORITY\\SYSTEM",
-            "FullControl",
-            "ContainerInherit, ObjectInherit",
-            "None",
-            "Allow"
-        )
-        $acl.AddAccessRule($systemRule)
-
-        Set-Acl -Path $path -AclObject $acl
-        Write-Host "✓ Geschützt: $path" -ForegroundColor Cyan
-
-    } catch {
-        Write-Host "✗ Fehler bei: $path" -ForegroundColor Red
+      const dirHandle = await (window as any).showDirectoryPicker();
+      
+      // Erstelle Mandanten-Hauptordner
+      const mandatFolder = await dirHandle.getDirectoryHandle(mandat.mandatenNummer, { create: true });
+      
+      // Erstelle die vier Hauptordner
+      await mandatFolder.getDirectoryHandle('Jahresabschluss', { create: true });
+      await mandatFolder.getDirectoryHandle('Steuererklärung', { create: true });
+      await mandatFolder.getDirectoryHandle('Steuerberatung', { create: true });
+      await mandatFolder.getDirectoryHandle('Rechtsberatung', { create: true });
+      
+      alert('✅ Ordnerstruktur erfolgreich erstellt!\n\n' +
+            'Folgende Ordner wurden angelegt:\n' +
+            '• Jahresabschluss\n' +
+            '• Steuererklärung\n' +
+            '• Steuerberatung\n' +
+            '• Rechtsberatung');
+    } catch (error) {
+      if ((error as any).name === 'AbortError') {
+        // Benutzer hat abgebrochen
+        return;
+      }
+      alert('❌ Fehler beim Erstellen der Ordner:\n' + (error as Error).message);
     }
-}
-
-Set-FolderProtection -path $basePath
-
-Get-ChildItem -Path $basePath -Recurse -Directory | ForEach-Object {
-    Set-FolderProtection -path $_.FullName
-}
-
-Write-Host ""
-Write-Host "FERTIG!" -ForegroundColor Green
-Write-Host "Die Ordner sind jetzt geschützt:" -ForegroundColor White
-Write-Host "• Normale Benutzer: Nur Lesen & Ausführen" -ForegroundColor Yellow
-Write-Host "• Administratoren: Vollzugriff" -ForegroundColor Yellow
-Write-Host ""
-Write-Host "Drücken Sie eine beliebige Taste zum Beenden..."
-$null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
-`;
-
-    const blob = new Blob([script], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `Schreibschutz_${mandat.mandatenNummer}.ps1`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-
-    alert('📥 PowerShell-Skript heruntergeladen!\n\n' +
-           '✅ Was macht das Skript:\n' +
-           '1. Erstellt Ordnerstruktur (falls noch nicht vorhanden)\n' +
-           '2. Aktiviert Schreibschutz auf allen Ordnern\n\n' +
-           '⚠️ SO FÜHREN SIE ES AUS:\n' +
-           '1. Rechtsklick auf Schreibschutz_' + mandat.mandatenNummer + '.ps1\n' +
-           '2. "Als Administrator ausführen" wählen\n' +
-           '3. Warten bis "FERTIG!" angezeigt wird\n\n' +
-           '🔒 Danach können nur Admins die Ordner löschen!\n\n' +
-           '💡 TIPP: Dieses Skript funktioniert IMMER - auch bei\n' +
-           'Netzlaufwerken wo der grüne Button nicht geht!');
   };
+
+
 
   if (!mandat) {
     return <div>Laden...</div>;
@@ -283,19 +149,15 @@ $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
                   <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
                     <h4 className="font-semibold text-blue-900 mb-2">📁 Ordnerstruktur anlegen:</h4>
                     <div className="space-y-2 text-sm text-blue-800">
-                      <p><strong>Option 1 (Grün):</strong> Nur für lokale Tests - nicht für M:\\STB</p>
-                      <p><strong>Option 2 (Orange):</strong> Automatischer M:\\STB Pfad - findet {mandat.mandatenNummer.substring(0,1)}\\{mandat.mandatenNummer.substring(0,2)}\\{mandat.mandatenNummer}</p>
+                      <p>Wählen Sie einen Ordner aus, in dem die Mandanten-Ordnerstruktur erstellt werden soll.</p>
+                      <p><strong>Erstellt werden:</strong> Jahresabschluss, Steuererklärung, Steuerberatung, Rechtsberatung</p>
                     </div>
                   </div>
 
                   <div className="flex gap-3">
                     <Button onClick={handleCreateFolders} className="bg-green-600 hover:bg-green-700 text-white">
                       <HardDrive className="h-4 w-4 mr-2" />
-                      Nur für Tests (nicht M:\\STB)
-                    </Button>
-                    <Button onClick={handleActivateProtection} className="bg-orange-600 hover:bg-orange-700 text-white">
-                      <Shield className="h-4 w-4 mr-2" />
-                      Ordner + Schutz (PowerShell)
+                      Ordner auswählen und Struktur erstellen
                     </Button>
                   </div>
                 </div>
@@ -382,19 +244,15 @@ $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
                   <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
                     <h4 className="font-semibold text-blue-900 mb-2">📁 Ordnerstruktur anlegen:</h4>
                     <div className="space-y-2 text-sm text-blue-800">
-                      <p><strong>Option 1 (Grün):</strong> Nur für lokale Tests - nicht für M:\\STB</p>
-                      <p><strong>Option 2 (Orange):</strong> Automatischer M:\\STB Pfad - findet {mandat.mandatenNummer.substring(0,1)}\\{mandat.mandatenNummer.substring(0,2)}\\{mandat.mandatenNummer}</p>
+                      <p>Wählen Sie einen Ordner aus, in dem die Mandanten-Ordnerstruktur erstellt werden soll.</p>
+                      <p><strong>Erstellt werden:</strong> Jahresabschluss, Steuererklärung, Steuerberatung, Rechtsberatung</p>
                     </div>
                   </div>
 
                   <div className="flex gap-3">
                     <Button onClick={handleCreateFolders} className="bg-green-600 hover:bg-green-700 text-white">
                       <HardDrive className="h-4 w-4 mr-2" />
-                      Nur für Tests (nicht M:\\STB)
-                    </Button>
-                    <Button onClick={handleActivateProtection} className="bg-orange-600 hover:bg-orange-700 text-white">
-                      <Shield className="h-4 w-4 mr-2" />
-                      Ordner + Schutz (PowerShell)
+                      Ordner auswählen und Struktur erstellen
                     </Button>
                   </div>
                 </div>
