@@ -1,6 +1,6 @@
-export interface Mandant {
+export interface mandat {
   id: string;
-  mandantenNummer: string;
+  mandatenNummer: string;
   leitmandatsNummer: string;
   gesellschaft: string;
   wirtschaftsprüfungsgesellschaft: string;
@@ -12,7 +12,7 @@ export interface Mandant {
   segment: string;
   risikoVertragspartner: string;
   statusUnvollständig: boolean;
-  rolleMandant: string;
+  rollemandat: string;
   zuletztBearbeitet: string;
   erstelltAm: string;
 
