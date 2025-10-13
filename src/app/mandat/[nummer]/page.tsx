@@ -39,12 +39,10 @@ export default function MandatPage() {
     if (!mandat) return;
 
     try {
-      const dirHandle = await (window as any).showDirectoryPicker();
+      const dirHandle = await (window as unknown as { showDirectoryPicker: () => Promise<FileSystemDirectoryHandle> }).showDirectoryPicker();
       
-      // Erstelle Mandanten-Hauptordner
       const mandatFolder = await dirHandle.getDirectoryHandle(mandat.mandatenNummer, { create: true });
       
-      // Erstelle die vier Hauptordner
       await mandatFolder.getDirectoryHandle('Jahresabschluss', { create: true });
       await mandatFolder.getDirectoryHandle('Steuererklärung', { create: true });
       await mandatFolder.getDirectoryHandle('Steuerberatung', { create: true });
@@ -57,8 +55,7 @@ export default function MandatPage() {
             '• Steuerberatung\n' +
             '• Rechtsberatung');
     } catch (error) {
-      if ((error as any).name === 'AbortError') {
-        // Benutzer hat abgebrochen
+      if ((error as { name: string }).name === 'AbortError') {
         return;
       }
       alert('❌ Fehler beim Erstellen der Ordner:\n' + (error as Error).message);
