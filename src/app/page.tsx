@@ -29,7 +29,7 @@ export default function Home() {
     if (mandat) {
       router.push(`/mandat/${searchNumber}`);
     } else {
-      alert('mandat nicht gefunden. Bitte legen Sie einen neuen mandaten an.');
+      alert('Mandat nicht gefunden. Bitte legen Sie einen neuen Mandaten an.');
     }
   };
 
