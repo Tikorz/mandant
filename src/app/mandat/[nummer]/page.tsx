@@ -63,7 +63,7 @@ export default function MandatPage() {
 $mandatNummer = "${num}"
 $firstDigit = $mandatNummer.Substring(0,1)
 $firstTwoDigits = $mandatNummer.Substring(0,2)
-$basePath = "M:\\STB\\$firstDigit\\$firstTwoDigits\\$mandatNummer"
+$basePath = "M:\\\\STB\\\\$firstDigit\\\\$firstTwoDigits\\\\$mandatNummer"
 
 Write-Host "=====================================" -ForegroundColor Cyan
 Write-Host "mandaten-Ordnerstruktur erstellen" -ForegroundColor Cyan
@@ -76,10 +76,10 @@ Write-Host ""
 if (-not (Test-Path $basePath)) {
     Write-Host "[1/2] Erstelle Ordnerstruktur..." -ForegroundColor Green
 
-    # Erstelle Pfad-Hierarchie: M:\STB\4\41\41320
-    $stbPath = "M:\\STB"
-    $firstDigitPath = "$stbPath\\$firstDigit"
-    $twoDigitPath = "$firstDigitPath\\$firstTwoDigits"
+    # Erstelle Pfad-Hierarchie: M:\\STB\\4\\41\\41320
+    $stbPath = "M:\\\\STB"
+    $firstDigitPath = "$stbPath\\\\$firstDigit"
+    $twoDigitPath = "$firstDigitPath\\\\$firstTwoDigits"
     
     New-Item -ItemType Directory -Path $stbPath -Force | Out-Null
     New-Item -ItemType Directory -Path $firstDigitPath -Force | Out-Null
@@ -87,19 +87,19 @@ if (-not (Test-Path $basePath)) {
     New-Item -ItemType Directory -Path $basePath -Force | Out-Null
 
     # Dauerakte
-    $daueraktePath = "$basePath\\Dauerakte"
+    $daueraktePath = "$basePath\\\\Dauerakte"
     New-Item -ItemType Directory -Path $daueraktePath -Force | Out-Null
-    New-Item -ItemType Directory -Path "$daueraktePath\\Allgemeiner Schriftverkehr" -Force | Out-Null
-    New-Item -ItemType Directory -Path "$daueraktePath\\Verträge Unterlagen" -Force | Out-Null
-    New-Item -ItemType Directory -Path "$daueraktePath\\Auftragswesen" -Force | Out-Null
+    New-Item -ItemType Directory -Path "$daueraktePath\\\\Allgemeiner Schriftverkehr" -Force | Out-Null
+    New-Item -ItemType Directory -Path "$daueraktePath\\\\Verträge Unterlagen" -Force | Out-Null
+    New-Item -ItemType Directory -Path "$daueraktePath\\\\Auftragswesen" -Force | Out-Null
 
     # Jahresakte
-    $jahresaktePath = "$basePath\\Jahresakte"
+    $jahresaktePath = "$basePath\\\\Jahresakte"
     New-Item -ItemType Directory -Path $jahresaktePath -Force | Out-Null
-    New-Item -ItemType Directory -Path "$jahresaktePath\\Finanzbuchhaltung" -Force | Out-Null
-    New-Item -ItemType Directory -Path "$jahresaktePath\\Anlagenbuchhaltung" -Force | Out-Null
-    New-Item -ItemType Directory -Path "$jahresaktePath\\Jahresabschluss" -Force | Out-Null
-    New-Item -ItemType Directory -Path "$jahresaktePath\\FIBU" -Force | Out-Null
+    New-Item -ItemType Directory -Path "$jahresaktePath\\\\Finanzbuchhaltung" -Force | Out-Null
+    New-Item -ItemType Directory -Path "$jahresaktePath\\\\Anlagenbuchhaltung" -Force | Out-Null
+    New-Item -ItemType Directory -Path "$jahresaktePath\\\\Jahresabschluss" -Force | Out-Null
+    New-Item -ItemType Directory -Path "$jahresaktePath\\\\FIBU" -Force | Out-Null
 
     Write-Host "      ✓ Ordner erfolgreich erstellt!" -ForegroundColor Green
     Write-Host ""
