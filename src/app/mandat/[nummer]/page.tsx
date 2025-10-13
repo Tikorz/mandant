@@ -38,63 +38,14 @@ export default function MandatPage() {
   const handleCreateFolders = async () => {
     if (!mandat) return;
 
-    if (!('showDirectoryPicker' in window)) {
-      alert('Ihr Browser unterstützt diese Funktion nicht. Bitte verwenden Sie Chrome oder Edge.');
-      return;
-    }
-
-    try {
-      const directoryHandle = await (window as typeof window & {
-        showDirectoryPicker: (options?: {
-          mode?: 'read' | 'readwrite';
-          startIn?: 'desktop' | 'documents' | 'downloads' | 'music' | 'pictures' | 'videos';
-        }) => Promise<FileSystemDirectoryHandle>;
-      }).showDirectoryPicker({
-        mode: 'readwrite',
-        startIn: 'documents'
-      });
-
-      const mandatFolder = await directoryHandle.getDirectoryHandle(
-        mandat.mandatenNummer,
-        { create: true }
-      );
-
-      const dauerakte = await mandatFolder.getDirectoryHandle('Dauerakte', { create: true });
-      await dauerakte.getDirectoryHandle('Allgemeiner Schriftverkehr', { create: true });
-      await dauerakte.getDirectoryHandle('Verträge Unterlagen', { create: true });
-      await dauerakte.getDirectoryHandle('Auftragswesen', { create: true });
-
-      const jahresakte = await mandatFolder.getDirectoryHandle('Jahresakte', { create: true });
-      await jahresakte.getDirectoryHandle('Finanzbuchhaltung', { create: true });
-      await jahresakte.getDirectoryHandle('Anlagenbuchhaltung', { create: true });
-      await jahresakte.getDirectoryHandle('Jahresabschluss', { create: true });
-      await jahresakte.getDirectoryHandle('FIBU', { create: true });
-
-      const msg = `✅ Ordnerstruktur für mandat ${mandat.mandatenNummer} erstellt!\n\nDauerakte:\n• Allgemeiner Schriftverkehr\n• Verträge Unterlagen\n• Auftragswesen\n\nJahresakte:\n• Finanzbuchhaltung\n• Anlagenbuchhaltung\n• Jahresabschluss\n• FIBU\n\n⚠️ Klicken Sie auf "Schreibschutz aktivieren" um die Ordner zu schützen!`;
-      alert(msg);
-
-    } catch (error: unknown) {
-      const err = error as Error & { name: string };
-      if (err.name === 'AbortError') {
-        console.log('Ordnerauswahl abgebrochen');
-      } else if (err.name === 'NoModificationAllowedError') {
-        alert('❌ FEHLER: Keine Schreibrechte!\n\n' +
-              'Mögliche Ursachen:\n' +
-              '• Netzlaufwerk M:\\ hat Einschränkungen\n' +
-              '• Ordner ist schreibgeschützt\n' +
-              '• Keine Berechtigung im ausgewählten Ordner\n\n' +
-              '💡 LÖSUNG:\n' +
-              '1. Wählen Sie einen lokalen Ordner (z.B. C:\\Temp\\)\n' +
-              '2. ODER verwenden Sie den orangen Button "Schreibschutz aktivieren"\n' +
-              '   (lädt PowerShell-Skript herunter - funktioniert immer!)');
-      } else {
-        console.error('Fehler:', err);
-        alert('❌ Fehler beim Erstellen der Ordnerstruktur.\n\n' +
-              'Fehlertyp: ' + err.name + '\n' +
-              'Meldung: ' + err.message + '\n\n' +
-              '💡 Tipp: Verwenden Sie den orangen Button "Schreibschutz aktivieren"');
-      }
-    }
+    alert('⚠️ Browser-Ordnererstellung nicht für M:\\STB geeignet!\n\n' +
+          '🔧 Verwenden Sie stattdessen den orangen Button:\n' +
+          '"Ordner + Schutz (PowerShell)"\n\n' +
+          '✅ Das PowerShell-Skript:\n' +
+          '• Findet automatisch den richtigen Pfad\n' +
+          '• Erstellt alle Ordner\n' +
+          '• Aktiviert Schreibschutz\n' +
+          '• Funktioniert mit Netzlaufwerken');
   };
 
   const handleActivateProtection = () => {
@@ -108,11 +59,16 @@ export default function MandatPage() {
 # Erstellt Ordner UND aktiviert Schreibschutz
 # WICHTIG: Mit Administrator-Rechten ausführen!
 
-$basePath = "M:\\STB\\${firstDigit}\\${num}"
+# Automatische Pfad-Erkennung basierend auf Mandatennummer
+$mandatNummer = "${num}"
+$firstDigit = $mandatNummer.Substring(0,1)
+$firstTwoDigits = $mandatNummer.Substring(0,2)
+$basePath = "M:\\STB\\$firstDigit\\$firstTwoDigits\\$mandatNummer"
 
 Write-Host "=====================================" -ForegroundColor Cyan
 Write-Host "mandaten-Ordnerstruktur erstellen" -ForegroundColor Cyan
-Write-Host "mandat: ${num}" -ForegroundColor Cyan
+Write-Host "mandat: $mandatNummer" -ForegroundColor Cyan
+Write-Host "Pfad: $basePath" -ForegroundColor Cyan
 Write-Host "=====================================" -ForegroundColor Cyan
 Write-Host ""
 
@@ -120,7 +76,14 @@ Write-Host ""
 if (-not (Test-Path $basePath)) {
     Write-Host "[1/2] Erstelle Ordnerstruktur..." -ForegroundColor Green
 
-    # Hauptordner
+    # Erstelle Pfad-Hierarchie: M:\STB\4\41\41320
+    $stbPath = "M:\\STB"
+    $firstDigitPath = "$stbPath\\$firstDigit"
+    $twoDigitPath = "$firstDigitPath\\$firstTwoDigits"
+    
+    New-Item -ItemType Directory -Path $stbPath -Force | Out-Null
+    New-Item -ItemType Directory -Path $firstDigitPath -Force | Out-Null
+    New-Item -ItemType Directory -Path $twoDigitPath -Force | Out-Null
     New-Item -ItemType Directory -Path $basePath -Force | Out-Null
 
     # Dauerakte
@@ -320,15 +283,15 @@ $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
                   <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
                     <h4 className="font-semibold text-blue-900 mb-2">📁 Ordnerstruktur anlegen:</h4>
                     <div className="space-y-2 text-sm text-blue-800">
-                      <p><strong>Option 1 (Grün):</strong> Ordner im Browser erstellen - keine Admin-Rechte nötig</p>
-                      <p><strong>Option 2 (Orange):</strong> PowerShell-Skript - erstellt Ordner + Schreibschutz (Admin-Rechte nötig)</p>
+                      <p><strong>Option 1 (Grün):</strong> Nur für lokale Tests - nicht für M:\\STB</p>
+                      <p><strong>Option 2 (Orange):</strong> Automatischer M:\\STB Pfad - findet {mandat.mandatenNummer.substring(0,1)}\\{mandat.mandatenNummer.substring(0,2)}\\{mandat.mandatenNummer}</p>
                     </div>
                   </div>
 
                   <div className="flex gap-3">
                     <Button onClick={handleCreateFolders} className="bg-green-600 hover:bg-green-700 text-white">
                       <HardDrive className="h-4 w-4 mr-2" />
-                      Ordner erstellen (Browser)
+                      Nur für Tests (nicht M:\\STB)
                     </Button>
                     <Button onClick={handleActivateProtection} className="bg-orange-600 hover:bg-orange-700 text-white">
                       <Shield className="h-4 w-4 mr-2" />
@@ -419,15 +382,15 @@ $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
                   <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
                     <h4 className="font-semibold text-blue-900 mb-2">📁 Ordnerstruktur anlegen:</h4>
                     <div className="space-y-2 text-sm text-blue-800">
-                      <p><strong>Option 1 (Grün):</strong> Ordner im Browser erstellen - keine Admin-Rechte nötig</p>
-                      <p><strong>Option 2 (Orange):</strong> PowerShell-Skript - erstellt Ordner + Schreibschutz (Admin-Rechte nötig)</p>
+                      <p><strong>Option 1 (Grün):</strong> Nur für lokale Tests - nicht für M:\\STB</p>
+                      <p><strong>Option 2 (Orange):</strong> Automatischer M:\\STB Pfad - findet {mandat.mandatenNummer.substring(0,1)}\\{mandat.mandatenNummer.substring(0,2)}\\{mandat.mandatenNummer}</p>
                     </div>
                   </div>
 
                   <div className="flex gap-3">
                     <Button onClick={handleCreateFolders} className="bg-green-600 hover:bg-green-700 text-white">
                       <HardDrive className="h-4 w-4 mr-2" />
-                      Ordner erstellen (Browser)
+                      Nur für Tests (nicht M:\\STB)
                     </Button>
                     <Button onClick={handleActivateProtection} className="bg-orange-600 hover:bg-orange-700 text-white">
                       <Shield className="h-4 w-4 mr-2" />
