@@ -1,56 +1,56 @@
-import type { Mandant } from '@/types/mandant';
+import type { mandat } from '@/types/mandat';
 
-const STORAGE_KEY = 'mandanten';
+const STORAGE_KEY = 'mandaten';
 
-export function getAllMandanten(): Mandant[] {
+export function getAllmandaten(): mandat[] {
   if (typeof window === 'undefined') return [];
   const data = localStorage.getItem(STORAGE_KEY);
   return data ? JSON.parse(data) : [];
 }
 
-export function getMandantByNummer(nummer: string): Mandant | undefined {
-  const mandanten = getAllMandanten();
-  return mandanten.find(m => m.mandantenNummer === nummer);
+export function getmandatByNummer(nummer: string): mandat | undefined {
+  const mandaten = getAllmandaten();
+  return mandaten.find(m => m.mandatenNummer === nummer);
 }
 
-export function saveMandant(mandant: Mandant): void {
-  const mandanten = getAllMandanten();
-  const index = mandanten.findIndex(m => m.id === mandant.id);
+export function savemandat(mandat: mandat): void {
+  const mandaten = getAllmandaten();
+  const index = mandaten.findIndex(m => m.id === mandat.id);
 
   if (index >= 0) {
-    mandanten[index] = mandant;
+    mandaten[index] = mandat;
   } else {
-    mandanten.push(mandant);
+    mandaten.push(mandat);
   }
 
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(mandanten));
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(mandaten));
 }
 
-export function generateMandantenNummer(): string {
-  const mandanten = getAllMandanten();
-  if (mandanten.length === 0) return '40100';
+export function generatemandatenNummer(): string {
+  const mandaten = getAllmandaten();
+  if (mandaten.length === 0) return '40100';
 
-  const numbers = mandanten.map(m => Number.parseInt(m.mandantenNummer)).filter(n => !Number.isNaN(n));
+  const numbers = mandaten.map(m => Number.parseInt(m.mandatenNummer)).filter(n => !Number.isNaN(n));
   const maxNumber = Math.max(...numbers, 40099);
   return String(maxNumber + 1);
 }
 
-export function createDefaultMandant(mandantenNummer: string): Mandant {
+export function createDefaultmandat(mandatenNummer: string): mandat {
   return {
     id: crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`,
-    mandantenNummer,
-    leitmandatsNummer: mandantenNummer,
+    mandatenNummer,
+    leitmandatsNummer: mandatenNummer,
     gesellschaft: 'HPTP GmbH Wirtschaftsprüfungsgesellschaft',
     wirtschaftsprüfungsgesellschaft: '',
     partner: 'Sebastian Hinkel',
     manager: 'Sebastian Hinkel',
-    interneAnsprechpartner: 'Mandant',
-    rolle: 'Mandant',
+    interneAnsprechpartner: 'mandat',
+    rolle: 'mandat',
     branche: 'Hotellerie',
     segment: 'Franchise',
     risikoVertragspartner: 'Kein Risiko',
     statusUnvollständig: false,
-    rolleMandant: 'Mandant',
+    rollemandat: 'mandat',
     zuletztBearbeitet: new Date().toISOString(),
     erstelltAm: new Date().toISOString(),
   };

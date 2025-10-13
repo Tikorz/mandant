@@ -6,37 +6,37 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { getMandantByNummer, saveMandant } from '@/lib/storage';
-import type { Mandant } from '@/types/mandant';
+import { getmandatByNummer, savemandat } from '@/lib/storage';
+import type { mandat } from '@/types/mandat';
 import { ArrowLeft, X, HardDrive, Shield } from 'lucide-react';
 
-export default function MandantPage() {
+export default function MandatPage() {
   const router = useRouter();
   const params = useParams();
   const nummer = params.nummer as string;
 
-  const [mandant, setMandant] = useState<Mandant | null>(null);
+  const [mandat, setmandat] = useState<mandat | null>(null);
   const [activeTab, setActiveTab] = useState('allgemeines');
 
   useEffect(() => {
-    const loadedMandant = getMandantByNummer(nummer);
-    if (loadedMandant) {
-      setMandant(loadedMandant);
+    const loadedmandat = getmandatByNummer(nummer);
+    if (loadedmandat) {
+      setmandat(loadedmandat);
     } else {
-      alert('Mandant nicht gefunden');
+      alert('mandat nicht gefunden');
       router.push('/');
     }
   }, [nummer, router]);
 
   const handleSave = () => {
-    if (mandant) {
-      saveMandant(mandant);
-      alert('Mandant gespeichert!');
+    if (mandat) {
+      savemandat(mandat);
+      alert('mandat gespeichert!');
     }
   };
 
   const handleCreateFolders = async () => {
-    if (!mandant) return;
+    if (!mandat) return;
 
     if (!('showDirectoryPicker' in window)) {
       alert('Ihr Browser unterstützt diese Funktion nicht. Bitte verwenden Sie Chrome oder Edge.');
@@ -54,23 +54,23 @@ export default function MandantPage() {
         startIn: 'documents'
       });
 
-      const mandantFolder = await directoryHandle.getDirectoryHandle(
-        mandant.mandantenNummer,
+      const mandatFolder = await directoryHandle.getDirectoryHandle(
+        mandat.mandatenNummer,
         { create: true }
       );
 
-      const dauerakte = await mandantFolder.getDirectoryHandle('Dauerakte', { create: true });
+      const dauerakte = await mandatFolder.getDirectoryHandle('Dauerakte', { create: true });
       await dauerakte.getDirectoryHandle('Allgemeiner Schriftverkehr', { create: true });
       await dauerakte.getDirectoryHandle('Verträge Unterlagen', { create: true });
       await dauerakte.getDirectoryHandle('Auftragswesen', { create: true });
 
-      const jahresakte = await mandantFolder.getDirectoryHandle('Jahresakte', { create: true });
+      const jahresakte = await mandatFolder.getDirectoryHandle('Jahresakte', { create: true });
       await jahresakte.getDirectoryHandle('Finanzbuchhaltung', { create: true });
       await jahresakte.getDirectoryHandle('Anlagenbuchhaltung', { create: true });
       await jahresakte.getDirectoryHandle('Jahresabschluss', { create: true });
       await jahresakte.getDirectoryHandle('FIBU', { create: true });
 
-      const msg = `✅ Ordnerstruktur für Mandant ${mandant.mandantenNummer} erstellt!\n\nDauerakte:\n• Allgemeiner Schriftverkehr\n• Verträge Unterlagen\n• Auftragswesen\n\nJahresakte:\n• Finanzbuchhaltung\n• Anlagenbuchhaltung\n• Jahresabschluss\n• FIBU\n\n⚠️ Klicken Sie auf "Schreibschutz aktivieren" um die Ordner zu schützen!`;
+      const msg = `✅ Ordnerstruktur für mandat ${mandat.mandatenNummer} erstellt!\n\nDauerakte:\n• Allgemeiner Schriftverkehr\n• Verträge Unterlagen\n• Auftragswesen\n\nJahresakte:\n• Finanzbuchhaltung\n• Anlagenbuchhaltung\n• Jahresabschluss\n• FIBU\n\n⚠️ Klicken Sie auf "Schreibschutz aktivieren" um die Ordner zu schützen!`;
       alert(msg);
 
     } catch (error: unknown) {
@@ -98,21 +98,21 @@ export default function MandantPage() {
   };
 
   const handleActivateProtection = () => {
-    if (!mandant) return;
+    if (!mandat) return;
 
-    const firstDigit = mandant.mandantenNummer.charAt(0);
-    const num = mandant.mandantenNummer;
+    const firstDigit = mandat.mandatenNummer.charAt(0);
+    const num = mandat.mandatenNummer;
 
-    const script = `# PowerShell-Skript für Mandanten-Ordnerstruktur
-# Mandantennummer: ${num}
+    const script = `# PowerShell-Skript für mandaten-Ordnerstruktur
+# mandatennummer: ${num}
 # Erstellt Ordner UND aktiviert Schreibschutz
 # WICHTIG: Mit Administrator-Rechten ausführen!
 
 $basePath = "M:\\STB\\${firstDigit}\\${num}"
 
 Write-Host "=====================================" -ForegroundColor Cyan
-Write-Host "Mandanten-Ordnerstruktur erstellen" -ForegroundColor Cyan
-Write-Host "Mandant: ${num}" -ForegroundColor Cyan
+Write-Host "mandaten-Ordnerstruktur erstellen" -ForegroundColor Cyan
+Write-Host "mandat: ${num}" -ForegroundColor Cyan
 Write-Host "=====================================" -ForegroundColor Cyan
 Write-Host ""
 
@@ -219,7 +219,7 @@ $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `Schreibschutz_${mandant.mandantenNummer}.ps1`;
+    a.download = `Schreibschutz_${mandat.mandatenNummer}.ps1`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -230,7 +230,7 @@ $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
            '1. Erstellt Ordnerstruktur (falls noch nicht vorhanden)\n' +
            '2. Aktiviert Schreibschutz auf allen Ordnern\n\n' +
            '⚠️ SO FÜHREN SIE ES AUS:\n' +
-           '1. Rechtsklick auf Schreibschutz_' + mandant.mandantenNummer + '.ps1\n' +
+           '1. Rechtsklick auf Schreibschutz_' + mandat.mandatenNummer + '.ps1\n' +
            '2. "Als Administrator ausführen" wählen\n' +
            '3. Warten bis "FERTIG!" angezeigt wird\n\n' +
            '🔒 Danach können nur Admins die Ordner löschen!\n\n' +
@@ -238,7 +238,7 @@ $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
            'Netzlaufwerken wo der grüne Button nicht geht!');
   };
 
-  if (!mandant) {
+  if (!mandat) {
     return <div>Laden...</div>;
   }
 
@@ -278,17 +278,17 @@ $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
               <h1 className="text-2xl font-bold mb-4">HR Group Management GmbH</h1>
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
-                  <p>Leitmandats: <strong>{mandant.leitmandatsNummer}</strong></p>
-                  <p>Mandantennummer: <strong>{mandant.mandantenNummer}</strong></p>
-                  <p>Gesellschaft: <strong>{mandant.gesellschaft}</strong></p>
-                  <p>Partner: <strong>{mandant.partner}</strong></p>
-                  <p>Manager: <strong>{mandant.manager}</strong></p>
+                  <p>Leitmandats: <strong>{mandat.leitmandatsNummer}</strong></p>
+                  <p>mandatennummer: <strong>{mandat.mandatenNummer}</strong></p>
+                  <p>Gesellschaft: <strong>{mandat.gesellschaft}</strong></p>
+                  <p>Partner: <strong>{mandat.partner}</strong></p>
+                  <p>Manager: <strong>{mandat.manager}</strong></p>
                 </div>
                 <div>
-                  <p>Risiko des Vertragspartners: <strong>{mandant.risikoVertragspartner}</strong></p>
-                  <p>Status: <strong>{mandant.statusUnvollständig ? 'Unvollständig' : 'Vollständig'}</strong></p>
-                  <p>Rolle: <strong>{mandant.rolleMandant}</strong></p>
-                  <p>Zuletzt bearbeitet: <strong>{new Date(mandant.zuletztBearbeitet).toLocaleDateString('de-DE')}</strong></p>
+                  <p>Risiko des Vertragspartners: <strong>{mandat.risikoVertragspartner}</strong></p>
+                  <p>Status: <strong>{mandat.statusUnvollständig ? 'Unvollständig' : 'Vollständig'}</strong></p>
+                  <p>Rolle: <strong>{mandat.rollemandat}</strong></p>
+                  <p>Zuletzt bearbeitet: <strong>{new Date(mandat.zuletztBearbeitet).toLocaleDateString('de-DE')}</strong></p>
                 </div>
               </div>
             </div>
@@ -340,12 +340,12 @@ $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium mb-2">Leitmandatsnummer</label>
-                    <Input value={mandant.leitmandatsNummer} onChange={(e) => setMandant({...mandant, leitmandatsNummer: e.target.value})} />
+                    <Input value={mandat.leitmandatsNummer} onChange={(e) => setmandat({...mandat, leitmandatsNummer: e.target.value})} />
                   </div>
 
                   <div>
                     <label className="block text-sm font-medium mb-2">Gesellschaft</label>
-                    <Select value={mandant.gesellschaft} onValueChange={(value) => setMandant({...mandant, gesellschaft: value})}>
+                    <Select value={mandat.gesellschaft} onValueChange={(value) => setmandat({...mandat, gesellschaft: value})}>
                       <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="HPTP GmbH Wirtschaftsprüfungsgesellschaft">HPTP GmbH Wirtschaftsprüfungsgesellschaft</SelectItem>
@@ -355,7 +355,7 @@ $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
 
                   <div>
                     <label className="block text-sm font-medium mb-2">Partner</label>
-                    <Select value={mandant.partner} onValueChange={(value) => setMandant({...mandant, partner: value})}>
+                    <Select value={mandat.partner} onValueChange={(value) => setmandat({...mandat, partner: value})}>
                       <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="Sebastian Hinkel">Sebastian Hinkel</SelectItem>
@@ -365,7 +365,7 @@ $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
 
                   <div>
                     <label className="block text-sm font-medium mb-2">Manager</label>
-                    <Select value={mandant.manager} onValueChange={(value) => setMandant({...mandant, manager: value})}>
+                    <Select value={mandat.manager} onValueChange={(value) => setmandat({...mandat, manager: value})}>
                       <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="Kohl, Stefanie">Kohl, Stefanie</SelectItem>
@@ -376,7 +376,7 @@ $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
 
                   <div>
                     <label className="block text-sm font-medium mb-2">Branche</label>
-                    <Select value={mandant.branche} onValueChange={(value) => setMandant({...mandant, branche: value})}>
+                    <Select value={mandat.branche} onValueChange={(value) => setmandat({...mandat, branche: value})}>
                       <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="Hotellerie">Hotellerie</SelectItem>
@@ -386,7 +386,7 @@ $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
 
                   <div>
                     <label className="block text-sm font-medium mb-2">Segment</label>
-                    <Select value={mandant.segment} onValueChange={(value) => setMandant({...mandant, segment: value})}>
+                    <Select value={mandat.segment} onValueChange={(value) => setmandat({...mandat, segment: value})}>
                       <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="Franchise">Franchise</SelectItem>

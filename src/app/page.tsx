@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { getMandantByNummer, saveMandant, generateMandantenNummer, createDefaultMandant } from '@/lib/storage';
+import { getmandatByNummer, savemandat, generatemandatenNummer, createDefaultmandat } from '@/lib/storage';
 import { Plus } from 'lucide-react';
 
 export default function Home() {
@@ -13,32 +13,32 @@ export default function Home() {
   const [searchNumber, setSearchNumber] = useState('40100');
   const [dialogOpen, setDialogOpen] = useState(false);
 
-  // Beispiel-Mandant beim ersten Laden erstellen
+  // Beispiel-mandat beim ersten Laden erstellen
   useEffect(() => {
-    const existing = getMandantByNummer('40100');
+    const existing = getmandatByNummer('40100');
     if (!existing) {
-      const exampleMandant = createDefaultMandant('40100');
-      saveMandant(exampleMandant);
+      const examplemandat = createDefaultmandat('40100');
+      savemandat(examplemandat);
     }
   }, []);
 
   const handleSearch = () => {
     if (!searchNumber) return;
 
-    const mandant = getMandantByNummer(searchNumber);
-    if (mandant) {
-      router.push(`/mandant/${searchNumber}`);
+    const mandat = getmandatByNummer(searchNumber);
+    if (mandat) {
+      router.push(`/mandat/${searchNumber}`);
     } else {
-      alert('Mandant nicht gefunden. Bitte legen Sie einen neuen Mandanten an.');
+      alert('mandat nicht gefunden. Bitte legen Sie einen neuen mandaten an.');
     }
   };
 
-  const handleCreateMandant = () => {
-    const newNumber = generateMandantenNummer();
-    const newMandant = createDefaultMandant(newNumber);
-    saveMandant(newMandant);
+  const handleCreatemandat = () => {
+    const newNumber = generatemandatenNummer();
+    const newmandat = createDefaultmandat(newNumber);
+    savemandat(newmandat);
     setDialogOpen(false);
-    router.push(`/mandant/${newNumber}`);
+    router.push(`/mandat/${newNumber}`);
   };
 
   return (
@@ -80,17 +80,17 @@ export default function Home() {
             <div className="space-y-4 text-gray-600">
               <p>
                 In der Kontaktverwaltung befinden sich alle Informationen, die für die Beziehungspflege und
-                Kommunikation mit unseren Mandanten sowie für die Identitätsprüfung und Risikoanalyse im Rahmen
+                Kommunikation mit unseren mandaten sowie für die Identitätsprüfung und Risikoanalyse im Rahmen
                 des Geldwäschegesetzes benötigt werden. Sämtliche Kommunikations- und
                 Kundenbindungsmaßnahmen, wie beispielsweise Newsletterversand und Geburtstagskarten werden
                 hierüber gesteuert.
               </p>
               <p>
-                Um einen bestehenden Kontakt zu bearbeiten, sucht man ihn per Mandantennummer oder Name im
+                Um einen bestehenden Kontakt zu bearbeiten, sucht man ihn per mandatennummer oder Name im
                 nebenstehenden Suchfeld.
               </p>
               <p>
-                Einen neuen Kontakt/Mandanten fügt man über „neuen Kontakt anlegen" hinzu.
+                Einen neuen Kontakt/mandaten fügt man über „neuen Kontakt anlegen" hinzu.
               </p>
             </div>
           </div>
@@ -103,7 +103,7 @@ export default function Home() {
                 type="text"
                 value={searchNumber}
                 onChange={(e) => setSearchNumber(e.target.value)}
-                placeholder="NAME ODER MANDANTENNUMMER *"
+                placeholder="NAME ODER mandatENNUMMER *"
                 className="bg-white text-gray-900 border-none"
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') handleSearch();
@@ -126,14 +126,14 @@ export default function Home() {
               </DialogTrigger>
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle>Neuen Mandanten anlegen</DialogTitle>
+                  <DialogTitle>Neuen mandaten anlegen</DialogTitle>
                 </DialogHeader>
                 <div className="py-4">
                   <p className="text-gray-600 mb-4">
-                    Es wird automatisch eine neue Mandantennummer generiert: <strong>{generateMandantenNummer()}</strong>
+                    Es wird automatisch eine neue mandatennummer generiert: <strong>{generatemandatenNummer()}</strong>
                   </p>
-                  <Button onClick={handleCreateMandant} className="w-full">
-                    Mandant erstellen
+                  <Button onClick={handleCreatemandat} className="w-full">
+                    mandat erstellen
                   </Button>
                 </div>
               </DialogContent>

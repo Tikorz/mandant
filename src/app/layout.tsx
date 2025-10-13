@@ -15,8 +15,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "HPTP Mandantenverwaltung",
-  description: "Kontaktverwaltung und Mandantenmanagement",
+  title: "HPTP mandatenverwaltung",
+  description: "Kontaktverwaltung und mandatenmanagement",
 };
 
 export default function RootLayout({
