@@ -12,6 +12,7 @@ export default function Home() {
   const router = useRouter();
   const [searchNumber, setSearchNumber] = useState('40100');
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [customNumber, setCustomNumber] = useState('');
 
   // Beispiel-mandat beim ersten Laden erstellen
   useEffect(() => {
@@ -34,10 +35,11 @@ export default function Home() {
   };
 
   const handleCreatemandat = () => {
-    const newNumber = generatemandatenNummer();
+    const newNumber = customNumber || generatemandatenNummer();
     const newmandat = createDefaultmandat(newNumber);
     savemandat(newmandat);
     setDialogOpen(false);
+    setCustomNumber('');
     router.push(`/mandat/${newNumber}`);
   };
 
@@ -129,9 +131,14 @@ export default function Home() {
                   <DialogTitle>Neuen mandaten anlegen</DialogTitle>
                 </DialogHeader>
                 <div className="py-4">
-                  <p className="text-gray-600 mb-4">
-                    Es wird automatisch eine neue mandatennummer generiert: <strong>{generatemandatenNummer()}</strong>
-                  </p>
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium mb-2">Mandatennummer</label>
+                    <Input
+                      value={customNumber}
+                      onChange={(e) => setCustomNumber(e.target.value)}
+                      placeholder={`Automatisch: ${generatemandatenNummer()}`}
+                    />
+                  </div>
                   <Button onClick={handleCreatemandat} className="w-full">
                     mandat erstellen
                   </Button>
