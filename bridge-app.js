@@ -3,7 +3,16 @@ const fs = require('fs');
 const path = require('path');
 const cors = require('cors');
 const { exec } = require('child_process');
-const { app: electronApp, Tray, Menu, nativeImage, BrowserWindow } = require('electron');
+// Electron-Module nur laden wenn verfügbar
+let electronApp, Tray, Menu, nativeImage, BrowserWindow;
+let isElectron = false;
+
+try {
+  ({ app: electronApp, Tray, Menu, nativeImage, BrowserWindow } = require('electron'));
+  isElectron = true;
+} catch (e) {
+  console.log('⚠️ Electron nicht verfügbar - läuft im Node.js Modus');
+}
 
 let tray = null;
 const PORT = 3001;
@@ -19,11 +28,17 @@ const TRAY_ICON_BASE64 = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQ
 // 🔧 Tipp: Bessere Alternative – Icon als Datei mitliefern (z. B. `icon.png`)
 // Aber für maximale Einfachheit: Wir verwenden ein winziges, hartkodiertes Icon
 // Hier ein **echtes, funktionierendes 16x16 PNG als Base64** (weißes "H" auf #2563eb):
-const TRAY_ICON = nativeImage.createFromDataURL(
-  'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAFUlEQVR42mNk+M9Qz0AEYBxVSFgBAAE2AjvY8MhWAAAAAElFTkSuQmCC'
-);
+// Tray-Icon nur wenn Electron verfügbar ist
+let TRAY_ICON = null;
+if (isElectron) {
+  TRAY_ICON = nativeImage.createFromDataURL(
+    'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAFUlEQVR42mNk+M9Qz0AEYBxVSFgBAAE2AjvY8MhWAAAAAElFTkSuQmCC'
+  );
+}
 
 function createTray() {
+  if (!isElectron) return;
+  
   tray = new Tray(TRAY_ICON);
   
   const contextMenu = Menu.buildFromTemplate([
@@ -72,17 +87,39 @@ app.post('/create-folders', (req, res) => {
     ['Jahresabschluss', 'Steuererklärung', 'Steuerberatung', 'Rechtsberatung'].forEach(folder => {
       const folderPath = path.join(basePath, folder);
       fs.mkdirSync(folderPath, { recursive: true });
-      
-      // Ordner schützen - nur Administrator kann löschen
-      exec(`icacls "${folderPath}" /deny *S-1-1-0:(DE)`, (error) => {
-        if (error) console.warn(`Warnung: Konnte ${folder} nicht schützen:`, error.message);
-      });
     });
     
-    // Hauptordner auch schützen
-    exec(`icacls "${basePath}" /deny *S-1-1-0:(DE)`, (error) => {
-      if (error) console.warn('Warnung: Konnte Hauptordner nicht schützen:', error.message);
-    });
+    // Ordner nach der Erstellung schützen (asynchron, ohne die Response zu blockieren)
+    setTimeout(() => {
+      console.log('Starte Ordnerschutz...');
+      
+      const protectFolder = (folderPath, folderName) => {
+        console.log(`Schütze: ${folderName}`);
+        
+        // 1. Verweigere Löschen und Ändern für alle Benutzer
+        exec(`icacls "${folderPath}" /deny Everyone:(DE,DC,AD,WD)`, { timeout: 10000 }, (error) => {
+          if (error) {
+            console.warn(`icacls fehlgeschlagen für ${folderName}:`, error.message);
+            // Fallback: System + Hidden + Read-only
+            exec(`attrib +S +H +R "${folderPath}"`, (err2) => {
+              if (err2) console.warn(`Auch attrib fehlgeschlagen für ${folderName}:`, err2.message);
+              else console.log(`✓ ${folderName} mit attrib geschützt`);
+            });
+          } else {
+            console.log(`✓ ${folderName} mit icacls geschützt`);
+          }
+        });
+      };
+      
+      // Hauptordner schützen
+      protectFolder(basePath, 'Hauptordner');
+      
+      // Unterordner schützen
+      ['Jahresabschluss', 'Steuererklärung', 'Steuerberatung', 'Rechtsberatung'].forEach(folder => {
+        const folderPath = path.join(basePath, folder);
+        protectFolder(folderPath, folder);
+      });
+    }, 500);
 
     res.json({ success: true, path: basePath });
   } catch (error) {
@@ -91,13 +128,21 @@ app.post('/create-folders', (req, res) => {
   }
 });
 
-// Electron-Start
-electronApp.whenReady().then(() => {
-  createTray();
-  app.listen(PORT, () => {
-    console.log(`🚀 HPTP Bridge läuft auf http://localhost:${PORT}`);
+// Start-Logik
+if (isElectron) {
+  // Electron-Start
+  electronApp.whenReady().then(() => {
+    createTray();
+    app.listen(PORT, () => {
+      console.log(`🚀 HPTP Bridge läuft auf http://localhost:${PORT}`);
+    });
   });
-});
-
-electronApp.on('window-all-closed', (e) => e.preventDefault());
-electronApp.on('before-quit', () => tray?.destroy());
+  
+  electronApp.on('window-all-closed', (e) => e.preventDefault());
+  electronApp.on('before-quit', () => tray?.destroy());
+} else {
+  // Node.js-Start
+  app.listen(PORT, () => {
+    console.log(`🚀 HPTP Bridge läuft auf http://localhost:${PORT} (Node.js Modus)`);
+  });
+}

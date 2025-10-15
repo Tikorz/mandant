@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { getmandatByNummer, savemandat, generatemandatenNummer, createDefaultmandat } from '@/lib/storage';
+import { FolderBridge } from '@/lib/bridge';
 import { Plus } from 'lucide-react';
 
 export default function Home() {
@@ -34,10 +35,14 @@ export default function Home() {
     }
   };
 
-  const handleCreatemandat = () => {
+  const handleCreatemandat = async () => {
     const newNumber = customNumber || generatemandatenNummer();
     const newmandat = createDefaultmandat(newNumber);
     savemandat(newmandat);
+    
+    // Ordner auf M: erstellen
+    await FolderBridge.createFolder(newNumber);
+    
     setDialogOpen(false);
     setCustomNumber('');
     router.push(`/mandat/${newNumber}`);

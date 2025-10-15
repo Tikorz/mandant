@@ -170,19 +170,13 @@ export default function MandatPage() {
 
               <TabsContent value="allgemeines" className="p-6">
                 <div className="mb-6">
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
-                    <h4 className="font-semibold text-blue-900 mb-2">📁 Ordnerstruktur anlegen:</h4>
-                    <div className="space-y-2 text-sm text-blue-800">
-                      <p>Wählen Sie einen Ordner aus, in dem die Mandanten-Ordnerstruktur erstellt werden soll.</p>
-                      <p><strong>Erstellt werden:</strong> Jahresabschluss, Steuererklärung, Steuerberatung, Rechtsberatung</p>
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                    <h4 className="font-semibold text-green-900 mb-2">✅ Ordnerstruktur automatisch erstellt</h4>
+                    <div className="space-y-2 text-sm text-green-800">
+                      <p>Die Mandanten-Ordnerstruktur wurde automatisch auf M: erstellt.</p>
+                      <p><strong>Pfad:</strong> M:\STB\{mandat.mandatenNummer[0]}\{mandat.mandatenNummer.substring(0, 2)}\{mandat.mandatenNummer}</p>
+                      <p><strong>Ordner:</strong> Jahresabschluss, Steuererklärung, Steuerberatung, Rechtsberatung</p>
                     </div>
-                  </div>
-
-                  <div className="flex gap-3">
-                    <Button onClick={handleCreateFolders} className="bg-green-600 hover:bg-green-700 text-white">
-                      <HardDrive className="h-4 w-4 mr-2" />
-                      Ordner auswählen und Struktur erstellen
-                    </Button>
                   </div>
                 </div>
 
@@ -264,22 +258,6 @@ export default function MandatPage() {
               </TabsContent>
 
               <TabsContent value="risikoanalyse" className="p-6">
-                <div className="mb-6">
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
-                    <h4 className="font-semibold text-blue-900 mb-2">📁 Ordnerstruktur anlegen:</h4>
-                    <div className="space-y-2 text-sm text-blue-800">
-                      <p>Wählen Sie einen Ordner aus, in dem die Mandanten-Ordnerstruktur erstellt werden soll.</p>
-                      <p><strong>Erstellt werden:</strong> Jahresabschluss, Steuererklärung, Steuerberatung, Rechtsberatung</p>
-                    </div>
-                  </div>
-
-                  <div className="flex gap-3">
-                    <Button onClick={handleCreateFolders} className="bg-green-600 hover:bg-green-700 text-white">
-                      <HardDrive className="h-4 w-4 mr-2" />
-                      Ordner auswählen und Struktur erstellen
-                    </Button>
-                  </div>
-                </div>
 
                 <div className="space-y-6">
                   <h3 className="text-lg font-bold text-blue-600">
