@@ -39,34 +39,53 @@ export default function MandatPage() {
     if (!mandat) return;
 
     try {
-      const firstDigit = mandat.mandatenNummer.charAt(0);
-      const firstTwo = mandat.mandatenNummer.substring(0, 2);
-      const suggestedPath = `M:\\STB\\${firstDigit}\\${firstTwo}`;
-      
-      alert(`🎯 Automatischer Pfad-Versuch:\n${suggestedPath}\n\nFalls das nicht funktioniert, wählen Sie manuell den Ordner aus.`);
-      
-      const dirHandle = await (window as unknown as { showDirectoryPicker: (options?: { startIn?: string; suggestedName?: string }) => Promise<FileSystemDirectoryHandle> }).showDirectoryPicker({
-        suggestedName: mandat.mandatenNummer
+      // Versuche Bridge Server
+      const response = await fetch('http://localhost:3001/create-folders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mandatenNummer: mandat.mandatenNummer })
       });
       
-      const mandatFolder = await dirHandle.getDirectoryHandle(mandat.mandatenNummer, { create: true });
+      const result = await response.json();
       
-      await mandatFolder.getDirectoryHandle('Jahresabschluss', { create: true });
-      await mandatFolder.getDirectoryHandle('Steuererklärung', { create: true });
-      await mandatFolder.getDirectoryHandle('Steuerberatung', { create: true });
-      await mandatFolder.getDirectoryHandle('Rechtsberatung', { create: true });
-      
-      alert('✅ Ordnerstruktur erfolgreich erstellt!\n\n' +
-            'Folgende Ordner wurden angelegt:\n' +
-            '• Jahresabschluss\n' +
-            '• Steuererklärung\n' +
-            '• Steuerberatung\n' +
-            '• Rechtsberatung');
-    } catch (error) {
-      if ((error as { name: string }).name === 'AbortError') {
-        return;
+      if (result.success) {
+        alert('✅ Ordnerstruktur erfolgreich erstellt!\n\n' +
+              `Pfad: ${result.path}\n\n` +
+              'Folgende Ordner wurden angelegt:\n' +
+              '• Jahresabschluss\n' +
+              '• Steuererklärung\n' +
+              '• Steuerberatung\n' +
+              '• Rechtsberatung');
+      } else {
+        alert('❌ Fehler beim Erstellen der Ordner:\n' + result.error);
       }
-      alert('❌ Fehler beim Erstellen der Ordner:\n' + (error as Error).message);
+    } catch (error) {
+      // Fallback: Manuelle Ordnerauswahl
+      try {
+        const dirHandle = await (window as unknown as { showDirectoryPicker: (options?: { startIn?: string; suggestedName?: string }) => Promise<FileSystemDirectoryHandle> }).showDirectoryPicker({
+          suggestedName: mandat.mandatenNummer
+        });
+        
+        const mandatFolder = await dirHandle.getDirectoryHandle(mandat.mandatenNummer, { create: true });
+        
+        await mandatFolder.getDirectoryHandle('Jahresabschluss', { create: true });
+        await mandatFolder.getDirectoryHandle('Steuererklärung', { create: true });
+        await mandatFolder.getDirectoryHandle('Steuerberatung', { create: true });
+        await mandatFolder.getDirectoryHandle('Rechtsberatung', { create: true });
+        
+        alert('✅ Ordnerstruktur erfolgreich erstellt!\n\n' +
+              'Folgende Ordner wurden angelegt:\n' +
+              '• Jahresabschluss\n' +
+              '• Steuererklärung\n' +
+              '• Steuerberatung\n' +
+              '• Rechtsberatung');
+      } catch (fallbackError) {
+        if ((fallbackError as { name: string }).name === 'AbortError') {
+          return;
+        }
+        alert('❌ Bridge Server nicht erreichbar und manuelle Auswahl fehlgeschlagen.\n\n' +
+              'Starten Sie: npm run bridge');
+      }
     }
   };
 
