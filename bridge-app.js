@@ -74,13 +74,13 @@ app.post('/create-folders', (req, res) => {
       fs.mkdirSync(folderPath, { recursive: true });
       
       // Ordner schützen - nur Administrator kann löschen
-      exec(`attrib +S +H "${folderPath}"`, (error) => {
+      exec(`icacls "${folderPath}" /deny *S-1-1-0:(DE)`, (error) => {
         if (error) console.warn(`Warnung: Konnte ${folder} nicht schützen:`, error.message);
       });
     });
     
     // Hauptordner auch schützen
-    exec(`attrib +S "${basePath}"`, (error) => {
+    exec(`icacls "${basePath}" /deny *S-1-1-0:(DE)`, (error) => {
       if (error) console.warn('Warnung: Konnte Hauptordner nicht schützen:', error.message);
     });
 
