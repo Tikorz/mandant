@@ -1,5 +1,7 @@
 {
   "name": "nextjs-shadcn",
+  "description": "Mandantenverwaltung mit Ordnerstruktur - Electron App",
+  "author": "Your Name",
   "main": "electron/main.js",
   "version": "0.1.0",
   "private": true,
