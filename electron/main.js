@@ -1,49 +1,18 @@
-const { app, BrowserWindow, ipcMain } = require('electron');
-const isDev = require('electron-is-dev');
-const path = require('path');
+const { app } = require('electron');
+const express = require('express');
 const fs = require('fs');
+const path = require('path');
+const cors = require('cors');
 
-let mainWindow;
+const server = express();
+const PORT = 3001;
 
-function createWindow() {
-  mainWindow = new BrowserWindow({
-    width: 1200,
-    height: 800,
-    webPreferences: {
-      nodeIntegration: false,
-      contextIsolation: true,
-      preload: path.join(__dirname, 'preload.js')
-    }
-  });
+server.use(cors());
+server.use(express.json());
 
-
-  
-  if (isDev) {
-    mainWindow.loadURL('http://localhost:3000');
-    mainWindow.webContents.openDevTools();
-  } else {
-    mainWindow.loadFile(path.join(__dirname, '../out/index.html'));
-  }
-}
-
-app.whenReady().then(createWindow);
-
-app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
-    app.quit();
-  }
-});
-
-app.on('activate', () => {
-  if (BrowserWindow.getAllWindows().length === 0) {
-    createWindow();
-  }
-});
-
-// IPC Handler für Ordner erstellen
-ipcMain.handle('create-folders', async (event, mandatData) => {
+server.post('/create-folders', (req, res) => {
   try {
-    const { mandatenNummer } = mandatData;
+    const { mandatenNummer } = req.body;
     const firstDigit = mandatenNummer.charAt(0);
     const firstTwo = mandatenNummer.substring(0, 2);
     
@@ -56,8 +25,25 @@ ipcMain.handle('create-folders', async (event, mandatData) => {
     fs.mkdirSync(path.join(basePath, 'Steuerberatung'), { recursive: true });
     fs.mkdirSync(path.join(basePath, 'Rechtsberatung'), { recursive: true });
     
-    return { success: true, path: basePath };
+    res.json({ success: true, path: basePath });
   } catch (error) {
-    return { success: false, error: error.message };
+    res.json({ success: false, error: error.message });
   }
 });
+
+app.whenReady().then(() => {
+  server.listen(PORT, () => {
+    console.log(`🚀 HPTP Bridge läuft auf Port ${PORT}`);
+    console.log('✅ Browser kann jetzt M:\\ Ordner erstellen!');
+  });
+});
+
+app.on('window-all-closed', () => {
+  // Lasse App laufen auch ohne Fenster
+});
+
+// Verhindere zweite Instanz
+const gotTheLock = app.requestSingleInstanceLock();
+if (!gotTheLock) {
+  app.quit();
+}

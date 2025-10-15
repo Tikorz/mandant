@@ -1,0 +1,19 @@
+{
+  "appId": "com.hptp.mandantenverwaltung",
+  "productName": "HPTP Mandantenverwaltung",
+  "directories": {
+    "output": "dist"
+  },
+  "files": [
+    "electron/**/*",
+    "node_modules/**/*",
+    "package.json"
+  ],
+  "win": {
+    "target": "portable"
+  },
+  "nsis": {
+    "oneClick": false,
+    "allowToChangeInstallationDirectory": true
+  }
+}

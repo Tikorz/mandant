@@ -11,7 +11,7 @@
     "format": "bunx biome format --write",
     "electron": "electron .",
     "electron-dev": "concurrently \"npm run dev\" \"wait-on http://localhost:3000 && electron .\"",
-    "build-electron": "next build && electron-builder",
+    "build-electron": "electron-builder --win",
     "bridge": "node folder-bridge/server.js"
   },
   "dependencies": {
